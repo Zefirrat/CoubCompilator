@@ -17,6 +17,13 @@ namespace CoubCompilator
         private List<Coub> _coubs;
         private List<CoubInfo> _coubUris;
         private const string _compilatorPathFolder = "C:/CoubCompilator/";
+
+        #region settings
+
+        private string _renderSpeed => "ultrafast";
+        private string _categoryLoadFrom => "tag/erotic";
+        #endregion
+
         public CompilatorsBody()
         {
             _coubApi = new CoubAPI();
@@ -27,7 +34,7 @@ namespace CoubCompilator
         private void _loadCoubs(int coubsPage)
         {
             Console.WriteLine($"Loading coubs.");
-            Welcome coubResult = _coubApi.GetPage(coubsPage, 25);
+            Welcome coubResult = _coubApi.GetPage(coubsPage, 25, _categoryLoadFrom);
             Console.WriteLine($"Loaded coubs count: {coubResult.Coubs.Count}");
             _coubs.AddRange(coubResult.Coubs);
         }
@@ -142,7 +149,8 @@ namespace CoubCompilator
             ExecuteCommand executeCommand = new ExecuteCommand();
             Console.WriteLine("Starting rendering.");
             File.Delete(Path.Combine(_compilatorPathFolder, "Compilation.mp4"));
-            string command = $"cd {_compilatorPathFolder} & ffmpeg -f concat -safe 0 -i videos.txt -lavfi \"[0:v]scale=1920:1080,boxblur=luma_radius=min(h\\,w)/20:luma_power=1:chroma_radius=min(cw\\,ch)/20:chroma_power=1[bg];[bg][0:v]overlay=(W-w)/2:(H-h)/2,scale=1920:1080[ov];[ov][0:v]overlay=1920:1080,crop=1920:1080,setsar=1:1\" -c:v libx264 -preset slow -crf 18 -c:a aac Compilation.mp4";
+            string command = $"cd {_compilatorPathFolder} & ffmpeg -f concat -safe 0 -i videos.txt -lavfi \"[0:v]scale=1920*2:1080*2,boxblur=luma_radius=min(h\\,w)/20:luma_power=1:chroma_radius=min(cw\\,ch)/20:chroma_power=1[bg];[0:v]scale=-1:1080[ov];[bg][ov]overlay=(W-w)/2:(H-h)/2,crop=w=1920:h=1080\" " +
+                                                          $" -c:v libx264 -preset {_renderSpeed} -crf 18 -c:a aac Compilation.mp4";
             executeCommand.Execute(command);
             Console.WriteLine("Rendering complete.");
         }
