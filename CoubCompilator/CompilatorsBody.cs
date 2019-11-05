@@ -98,7 +98,7 @@ namespace CoubCompilator
                 _filterCoubs();
                 Console.WriteLine($"Coubs in store: {_coubs.Count}{Environment.NewLine}");
                 i++;
-            } while (_coubs.Count < 5);
+            } while (_coubs.Count < 75);
 
             _loadVideosInfo();
             _downloadCoubs();
@@ -142,7 +142,7 @@ namespace CoubCompilator
             ExecuteCommand executeCommand = new ExecuteCommand();
             Console.WriteLine("Starting rendering.");
             File.Delete(Path.Combine(_compilatorPathFolder, "Compilation.mp4"));
-            string command = $"cd {_compilatorPathFolder} & ffmpeg -f concat -safe 0 -i videos.txt -lavfi \"[0:v]scale='max(1920,ih*16/9)':-1,boxblur=luma_radius=min(h\\,w)/20:luma_power=1:chroma_radius=min(cw\\,ch)/20:chroma_power=1[bg];[bg][0:v]overlay=(W-w)/2:(H-h)/2,scale=h='max(1920,iw*9/16)'\" -vb 800K -c:v libx264 -preset fast -crf 18 -c:a aac Compilation.mp4";
+            string command = $"cd {_compilatorPathFolder} & ffmpeg -f concat -safe 0 -i videos.txt -lavfi \"[0:v]scale=1920:1080,boxblur=luma_radius=min(h\\,w)/20:luma_power=1:chroma_radius=min(cw\\,ch)/20:chroma_power=1[bg];[bg][0:v]overlay=(W-w)/2:(H-h)/2,scale=1920:1080[ov];[ov][0:v]overlay=1920:1080,crop=1920:1080,setsar=1:1\" -c:v libx264 -preset slow -crf 18 -c:a aac Compilation.mp4";
             executeCommand.Execute(command);
             Console.WriteLine("Rendering complete.");
         }
