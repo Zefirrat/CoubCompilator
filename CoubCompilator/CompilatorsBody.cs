@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -32,6 +33,23 @@ namespace CoubCompilator
         }
         private void _filterCoubs()
         {
+            List<Coub> newList = _coubs.Where(i => i.Duration > 7).ToList();
+            _coubs = new List<Coub>();
+            string[] blacklist;
+            using (StreamReader sr = new StreamReader(Path.Combine(_compilatorPathFolder, "blacklist.txt")))
+            {
+                blacklist = sr.ReadToEnd().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            }
+
+            foreach (var coub in newList)
+            {
+                if (_coubs.All(i => i.Permalink != coub.Permalink) && blacklist.All(i => i != coub.Permalink))
+                    _coubs.Add(coub);
+                else
+                {
+                    Console.WriteLine($"Filtered {coub.Permalink}");
+                }
+            }
 
         }
 
@@ -40,7 +58,7 @@ namespace CoubCompilator
             Console.WriteLine("Loading videos and audios Uris for each coub");
             foreach (var coub in _coubs)
             {
-                _coubUris.Add(new CoubInfo(coub.FileVersions.Html5.Video.Higher.Url, coub.FileVersions.Html5.Audio.High.Url, coub.Permalink, coub.Title));
+                _coubUris.Add(new CoubInfo(coub.FileVersions.Html5.Video.Higher.Url, coub.FileVersions.Html5.Audio.High.Url, coub.Permalink, coub.Title, coub.Duration, Path.Combine(_compilatorPathFolder, coub.Permalink)));
             }
             Console.WriteLine($"Loading info complete.{Environment.NewLine}");
         }
@@ -80,7 +98,7 @@ namespace CoubCompilator
                 _filterCoubs();
                 Console.WriteLine($"Coubs in store: {_coubs.Count}{Environment.NewLine}");
                 i++;
-            } while (_coubs.Count < 100);
+            } while (_coubs.Count < 5);
 
             _loadVideosInfo();
             _downloadCoubs();
@@ -92,26 +110,57 @@ namespace CoubCompilator
         {
             foreach (var coub in _coubUris)
             {
-                _compileCoub(Path.Combine(_compilatorPathFolder, coub.Permalink));
+                _compileCoub(coub);
             }
             _sortCoubs();
+            _finalCompile();
+        }
+
+        private void _finalCompile()
+        {
+            string videosTxt = Path.Combine(_compilatorPathFolder, "videos.txt");
+            Console.WriteLine($"{Environment.NewLine}Final compile start.");
+            FileStream fileStream = File.Create(videosTxt);
+            //File.WriteAllText(videosTxt, "");
+            using (StreamWriter streamWriter = new StreamWriter(fileStream))
+            {
+                using (StreamWriter blacklist = new StreamWriter(Path.Combine(_compilatorPathFolder, "blacklist.txt")))
+                {
+
+                    //streamWriter.WriteLine($"file 'Intro.mp4'");
+                    foreach (var coub in _coubUris)
+                    {
+                        if (!File.Exists(Path.Combine(_compilatorPathFolder, coub.Permalink, "Coub.mp4")))
+                            continue;
+
+                        streamWriter.WriteLine($"file '{coub.Permalink}/Coub.mp4'");
+                        blacklist.WriteLine(coub.Permalink);
+                        //streamWriter.WriteLine("file 'Separator.mp4'");
+                    }
+                }
+            }
+            ExecuteCommand executeCommand = new ExecuteCommand();
+            Console.WriteLine("Starting rendering.");
+            File.Delete(Path.Combine(_compilatorPathFolder, "Compilation.mp4"));
+            string command = $"cd {_compilatorPathFolder} & ffmpeg -f concat -safe 0 -i videos.txt -lavfi \"[0:v]scale='max(1920,ih*16/9)':-1,boxblur=luma_radius=min(h\\,w)/20:luma_power=1:chroma_radius=min(cw\\,ch)/20:chroma_power=1[bg];[bg][0:v]overlay=(W-w)/2:(H-h)/2,scale=h='max(1920,iw*9/16)'\" -vb 800K -c:v libx264 -preset fast -crf 18 -c:a aac Compilation.mp4";
+            executeCommand.Execute(command);
+            Console.WriteLine("Rendering complete.");
         }
 
         private void _sortCoubs()
         {
-
         }
 
-        private void _compileCoub(string pathToCoub)
+        private void _compileCoub(CoubInfo coubInfo)
         {
-            if (File.Exists(Path.Combine(pathToCoub, "Coub.mp4")))
+            if (File.Exists(Path.Combine(coubInfo.Path, "Coub.mp4")))
             {
-                Console.WriteLine($"Coub {pathToCoub} is alredy exist");
+                Console.WriteLine($"Coub {coubInfo.Permalink} is alredy exist");
                 return;
             }
             ExecuteCommand executeCommand = new ExecuteCommand();
-            Console.WriteLine($"Compiling coub {pathToCoub}");
-            string command = $"cd {pathToCoub} && ffmpeg -i Video.mp4 -i Audio.mp3 -map 0:v -map 1:a -c:a copy -c:v copy Coub.mp4 -y";
+            Console.WriteLine($"Compiling coub {coubInfo.Permalink}");
+            string command = $"cd {coubInfo.Path} && ffmpeg -i Video.mp4 -t {coubInfo.Duration.ToString("0.0", CultureInfo.InvariantCulture)} -i Audio.mp3 -map 0:v -map 1:a -c:a copy -c:v  copy Coub.mp4 -y";
             executeCommand.Execute(command);
         }
     }

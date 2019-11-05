@@ -38,14 +38,13 @@ namespace CoubCompilator.CompilingVideo
             process.StartInfo.FileName = _fileName;
             process.StartInfo.RedirectStandardInput = true;
             process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.CreateNoWindow = false;
             process.StartInfo.UseShellExecute = false;
             process.Start();
             process.StandardInput.WriteLine(command);
             process.StandardInput.Flush();
             process.StandardInput.Close();
             process.WaitForExit();
-            Console.WriteLine(process.StandardOutput.ReadToEnd());
             process.Dispose();
         }
     }

@@ -47,7 +47,7 @@
     <Compile Include="CompilingVideo\ExecuteCommand.cs" />
     <Compile Include="CoubClasses\CoubAPI.cs" />
     <Compile Include="CoubClasses\CoubResult.cs" />
-    <Compile Include="CoubClasses\CoubUri.cs" />
+    <Compile Include="CoubClasses\CoubInfo.cs" />
     <Compile Include="Http\Postman.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
