@@ -13,10 +13,26 @@ namespace CoubCompilator
     {
         static void Main(string[] args)
         {
-            CompilatorsBody  compilatorsBody = new CompilatorsBody();
-            compilatorsBody.Work();
+            string command;
+            CompilatorsBody compilatorsBody = new CompilatorsBody();
+        enterCommand:
+            Console.Clear();
+            Console.WriteLine("Enter the command:");
+            command = Console.ReadLine();
+            switch (command)
+            {
+                case "Work()":
+                    compilatorsBody.Work();
+                    break;
+                case "CompileAll()":
+                    compilatorsBody.CompileAll();
+                    break;
+                case "CompileMain()":
+                    compilatorsBody.CompileMain();
+                    break;
+            }
             Console.ReadLine();
-            
+            goto enterCommand;
         }
     }
 }
