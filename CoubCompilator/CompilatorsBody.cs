@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CoubCompilator.CompilingVideo;
 using CoubCompilator.CoubClasses;
+using Newtonsoft.Json;
 
 namespace CoubCompilator
 {
@@ -26,13 +27,13 @@ namespace CoubCompilator
         private int _loadingPerPage => 25;
         private bool _clearBlackList => false;
         private string _videosTxt = Path.Combine(_compilatorPathFolder, "videos.txt");
-
+        private string _urisTxt = Path.Combine(_compilatorPathFolder, "URIS.txt");
 
         #endregion
 
         #region paths
 
-        private string _blackListPath => Path.Combine(_compilatorPathFolder, $"blacklist-{_categoryLoadFrom}-{_clearBlackList}.txt");
+        private string _blackListPath => Path.Combine(_compilatorPathFolder, $"blacklist.txt");
 
         #endregion
 
@@ -84,6 +85,15 @@ namespace CoubCompilator
             {
                 _coubUris.Add(new CoubInfo(coub.FileVersions.Html5.Video.Higher.Url, coub.FileVersions.Html5.Audio?.High.Url, coub.Permalink, coub.Title, coub.Duration, Path.Combine(_compilatorPathFolder, coub.Permalink)));
             }
+
+            using (FileStream fs = File.Create(_urisTxt))
+            {
+            }
+            using (StreamWriter sw = new StreamWriter(_urisTxt))
+            {
+                sw.Write(JsonConvert.SerializeObject(_coubUris));
+            }
+
             Console.WriteLine($"Loading info complete.{Environment.NewLine}");
         }
         private void _downloadCoubs()
@@ -202,7 +212,7 @@ namespace CoubCompilator
             ExecuteCommand executeCommand = new ExecuteCommand();
             Console.WriteLine("Starting rendering.");
             File.Delete(Path.Combine(_compilatorPathFolder, "Compilation.mp4"));
-            string command = $"cd {_compilatorPathFolder} & ffmpeg -f concat -safe 0 -i videos.txt -c:v libx264 -preset {_renderSpeed} -crf 0 -c:a aac Compilation.mp4";
+            string command = $"cd {_compilatorPathFolder} & ffmpeg -f concat -safe 0 -i videos.txt -c:v libx264 -preset {_renderSpeed} -crf 13 -c:a aac Compilation.mp4";
             executeCommand.Execute(command);
             Console.WriteLine("Rendering complete.");
 
@@ -225,9 +235,9 @@ namespace CoubCompilator
             if (File.Exists(Path.Combine(coubInfo.Path, "Audio.mp3")))
             {
                 command =
-                    $"cd {coubInfo.Path} && ffmpeg -i Video.mp4 -t {coubInfo.Duration.ToString("0.0", CultureInfo.InvariantCulture)} -lavfi \"split [original][copy];[original]scale=w=-1:h=1080:-1:flags=neighbor+bitexact+accurate_rnd+full_chroma_int+full_chroma_inp+print_info[ov];[copy]scale=w=1920+500*iw/ih:h=ih*1920/iw+500*ih/iw" +
-                    $":flags=neighbor+bitexact+accurate_rnd+full_chroma_int+full_chroma_inp+print_info,boxblur=luma_radius=min(h\\,w)/20:luma_power=1:chroma_radius=min(cw\\,ch)/20:chroma_power=1[blur];[blur][ov]overlay=(W-w)/2:(H-h)/2,crop=w=1920:h=1080\" " +
-                    "-i Audio.mp3 -map 0:v -map 1:a -c:a copy Coub.mp4 -y";
+                    $"cd {coubInfo.Path} && ffmpeg -i Video.mp4 -t {coubInfo.Duration.ToString("0.0", CultureInfo.InvariantCulture)} -lavfi \"split [original][copy];[original]scale=w=-1:h=1080:-1:flags=neighbor+bitexact+accurate_rnd+full_chroma_int+full_chroma_inp+print_info,setsar=1:1[ov];[copy]scale=w=1920+1000*iw/ih:h=ih*1920/iw+1000*ih/iw" +
+                    $":flags=neighbor+bitexact+accurate_rnd+full_chroma_int+full_chroma_inp+print_info,setsar=1:1,boxblur=luma_radius=min(h\\,w)/20:luma_power=1:chroma_radius=min(cw\\,ch)/20:chroma_power=1[blur];[blur][ov]overlay=(W-w)/2:(H-h)/2,crop=w=1920:h=1080\" " +
+                    $"-i Audio.mp3 -map 0:v -map 1:a -c:a copy Coub.mp4 -y";
                 executeCommand.Execute(command);
             }
         }
