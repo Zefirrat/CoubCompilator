@@ -505,6 +505,11 @@ namespace CoubCompilator.CoubClasses
 
         [JsonProperty("size")]
         public long Size { get; set; }
+
+        public static implicit operator string(High v)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public partial class Video

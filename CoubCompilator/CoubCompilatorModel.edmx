@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="CoubCompilerModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="LoadedCoubs">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="Permalink" Type="nchar" MaxLength="10" Nullable="false" />
+          <Property Name="Title" Type="nchar" MaxLength="15" />
+          <Property Name="DurationVideo" Type="float" Nullable="false" />
+          <Property Name="Path" Type="nchar" MaxLength="30" />
+          <Property Name="LikesCount" Type="int" />
+          <Property Name="DurationSound" Type="float" />
+          <Property Name="PathVideo" Type="nchar" MaxLength="30" />
+          <Property Name="PathSound" Type="nchar" MaxLength="30" />
+          <Property Name="PathBlured" Type="nchar" MaxLength="30" />
+          <Property Name="PathCoub" Type="nchar" MaxLength="30" />
+          <Property Name="ViewsCount" Type="int" />
+          <Property Name="RemixesCount" Type="int" />
+          <Property Name="RecoubsCount" Type="int" />
+          <Property Name="DislikesCount" Type="int" />
+          <Property Name="UrlVideo" Type="nchar" MaxLength="30" />
+          <Property Name="UrlAudio" Type="nchar" MaxLength="30" />
+          <Property Name="DateLoaded" Type="date" />
+          <Property Name="CreatedAt" Type="datetime" />
+        </EntityType>
+        <EntityType Name="UploadedCompilations">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="Title" Type="nchar" MaxLength="30" />
+          <Property Name="MonthPublished" Type="int" />
+          <Property Name="YearPublished" Type="int" />
+        </EntityType>
+        <EntityType Name="UsedCoubs">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="Permalink" Type="nchar" MaxLength="10" />
+          <Property Name="UploadedCompilations_ID" Type="int" />
+        </EntityType>
+        <EntityContainer Name="CoubCompilerModelStoreContainer">
+          <EntitySet Name="LoadedCoubs" EntityType="Self.LoadedCoubs" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="UploadedCompilations" EntityType="Self.UploadedCompilations" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="UsedCoubs" EntityType="Self.UsedCoubs" Schema="dbo" store:Type="Tables" />
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="CoubCompilerModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="LoadedCoubs">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="Permalink" Type="String" MaxLength="10" FixedLength="true" Unicode="true" Nullable="false" />
+          <Property Name="Title" Type="String" MaxLength="15" FixedLength="true" Unicode="true" />
+          <Property Name="DurationVideo" Type="Double" Nullable="false" />
+          <Property Name="Path" Type="String" MaxLength="30" FixedLength="true" Unicode="true" />
+          <Property Name="LikesCount" Type="Int32" />
+          <Property Name="DurationSound" Type="Double" />
+          <Property Name="PathVideo" Type="String" MaxLength="30" FixedLength="true" Unicode="true" />
+          <Property Name="PathSound" Type="String" MaxLength="30" FixedLength="true" Unicode="true" />
+          <Property Name="PathBlured" Type="String" MaxLength="30" FixedLength="true" Unicode="true" />
+          <Property Name="PathCoub" Type="String" MaxLength="30" FixedLength="true" Unicode="true" />
+          <Property Name="ViewsCount" Type="Int32" />
+          <Property Name="RemixesCount" Type="Int32" />
+          <Property Name="RecoubsCount" Type="Int32" />
+          <Property Name="DislikesCount" Type="Int32" />
+          <Property Name="UrlVideo" Type="String" MaxLength="30" FixedLength="true" Unicode="true" />
+          <Property Name="UrlAudio" Type="String" MaxLength="30" FixedLength="true" Unicode="true" />
+          <Property Name="DateLoaded" Type="DateTime" Precision="0" />
+          <Property Name="CreatedAt" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityContainer Name="CoubCompilerEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="LoadedCoubs" EntityType="Self.LoadedCoubs" />
+          <EntitySet Name="UploadedCompilations" EntityType="CoubCompilerModel.UploadedCompilations" />
+          <EntitySet Name="UsedCoubs" EntityType="CoubCompilerModel.UsedCoubs" />
+        </EntityContainer>
+        <EntityType Name="UploadedCompilations">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="Title" Type="String" MaxLength="30" FixedLength="true" Unicode="true" />
+          <Property Name="MonthPublished" Type="Int32" />
+          <Property Name="YearPublished" Type="Int32" />
+        </EntityType>
+        <EntityType Name="UsedCoubs">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="Permalink" Type="String" MaxLength="10" FixedLength="true" Unicode="true" />
+          <Property Name="UploadedCompilations_ID" Type="Int32" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="CoubCompilerModelStoreContainer" CdmEntityContainer="CoubCompilerEntities">
+          <EntitySetMapping Name="LoadedCoubs">
+            <EntityTypeMapping TypeName="CoubCompilerModel.LoadedCoubs">
+              <MappingFragment StoreEntitySet="LoadedCoubs">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="Permalink" ColumnName="Permalink" />
+                <ScalarProperty Name="Title" ColumnName="Title" />
+                <ScalarProperty Name="DurationVideo" ColumnName="DurationVideo" />
+                <ScalarProperty Name="Path" ColumnName="Path" />
+                <ScalarProperty Name="LikesCount" ColumnName="LikesCount" />
+                <ScalarProperty Name="DurationSound" ColumnName="DurationSound" />
+                <ScalarProperty Name="PathVideo" ColumnName="PathVideo" />
+                <ScalarProperty Name="PathSound" ColumnName="PathSound" />
+                <ScalarProperty Name="PathBlured" ColumnName="PathBlured" />
+                <ScalarProperty Name="PathCoub" ColumnName="PathCoub" />
+                <ScalarProperty Name="ViewsCount" ColumnName="ViewsCount" />
+                <ScalarProperty Name="RemixesCount" ColumnName="RemixesCount" />
+                <ScalarProperty Name="RecoubsCount" ColumnName="RecoubsCount" />
+                <ScalarProperty Name="DislikesCount" ColumnName="DislikesCount" />
+                <ScalarProperty Name="UrlVideo" ColumnName="UrlVideo" />
+                <ScalarProperty Name="UrlAudio" ColumnName="UrlAudio" />
+                <ScalarProperty Name="DateLoaded" ColumnName="DateLoaded" />
+                <ScalarProperty Name="CreatedAt" ColumnName="CreatedAt" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UploadedCompilations">
+            <EntityTypeMapping TypeName="CoubCompilerModel.UploadedCompilations">
+              <MappingFragment StoreEntitySet="UploadedCompilations">
+                <ScalarProperty Name="YearPublished" ColumnName="YearPublished" />
+                <ScalarProperty Name="MonthPublished" ColumnName="MonthPublished" />
+                <ScalarProperty Name="Title" ColumnName="Title" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UsedCoubs">
+            <EntityTypeMapping TypeName="CoubCompilerModel.UsedCoubs">
+              <MappingFragment StoreEntitySet="UsedCoubs">
+                <ScalarProperty Name="UploadedCompilations_ID" ColumnName="UploadedCompilations_ID" />
+                <ScalarProperty Name="Permalink" ColumnName="Permalink" />
+                <ScalarProperty Name="ID" ColumnName="ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

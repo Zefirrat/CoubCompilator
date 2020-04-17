@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -16,9 +17,8 @@ namespace CoubCompilator
     {
         private CoubAPI _coubApi;
         private List<Coub> _coubs;
-        private List<CoubInfo> _coubUris;
         private const string _compilatorPathFolder = "C:/CoubCompilator/";
-
+        private CoubCompilerEntities _db;
         #region settings
 
         private string _renderSpeed => "fast";
@@ -41,13 +41,87 @@ namespace CoubCompilator
         {
             _coubApi = new CoubAPI();
             _coubs = new List<Coub>();
-            _coubUris = new List<CoubInfo>();
+            _db = new CoubCompilerEntities();
         }
 
-        private void _loadCoubs(int coubsPage)
+        #region Public Commands
+
+        //public void Work()
+        //{
+        //    Console.WriteLine($"{Environment.NewLine}Starting work.");
+        //    int i = 0;
+        //    do
+        //    {
+        //        _loadCoubs(i);
+        //        _filterCoubs();
+        //        Console.WriteLine($"Coubs in store: {_coubs.Count}{Environment.NewLine}");
+        //        i++;
+        //    } while (_coubs.Count < _numberOfCoubsToCompile);
+
+        //    _loadVideosInfo();
+        //    _downloadCoubs();
+
+        //    _compileVideos();
+        //}
+
+        public void CompileAll()
+        {
+            _fillVideosTxt();
+            _executeMainCompileCommand();
+        }
+
+        public void CompileMain()
+        {
+            _finalCompile();
+        }
+        public void AddToBlackList(string permalink)
+        {
+            _db.UsedCoubs.Add(new UsedCoubs() { ID = _db.UsedCoubs.Count(), Permalink = permalink });
+            _db.SaveChanges();
+        }
+
+        public void AddCurrentListToUsed()
+        {
+            foreach (var loadedCoub in _db.LoadedCoubs)
+            {
+                AddToBlackList(loadedCoub.Permalink);
+            }
+        }
+
+        public void ClearCurrentCoubsList()
+        {
+            _db.LoadedCoubs.RemoveRange(_db.LoadedCoubs);
+        }
+
+        public void LoadCoubsOfTheDay()
+        {
+            int i = 0;
+            do
+            {
+                _loadCoubs(i, CoubAPI.Order.newest_popular, "hot");
+                _filterCoubs();
+                Console.WriteLine($"Coubs in store: {_coubs.Count}{Environment.NewLine}");
+                i++;
+            } while (_coubs.Count < _numberOfCoubsToCompile);
+
+            _loadVideosInfo();
+        }
+
+        public void CompileLoadedCoubs()
+        {
+            //todo: make compiling
+        }
+
+        public void PublishToYouTube()
+        {
+            //todo: make publishing to youtube
+        }
+        #endregion
+
+        private void _loadCoubs(int coubsPage, CoubAPI.Order order, string categoryLoadFrom)
         {
             Console.WriteLine($"Loading coubs.");
-            Welcome coubResult = _coubApi.GetPage(coubsPage, _loadingPerPage, _categoryLoadFrom);
+            Welcome coubResult = _coubApi.GetPage(coubsPage, _loadingPerPage, order, categoryLoadFrom);
             Console.WriteLine($"Loaded coubs count: {coubResult.Coubs.Count}");
             _coubs.AddRange(coubResult.Coubs);
         }
@@ -55,21 +129,12 @@ namespace CoubCompilator
         {
             List<Coub> newList = _coubs.Where(i => i.Duration > 4).ToList();
             _coubs = new List<Coub>();
-            string[] blacklist;
-            FileStream blackListStream;
-            if (_clearBlackList)
-                blackListStream = File.Create(_blackListPath);
-            else
-                blackListStream = File.OpenRead(_blackListPath);
 
-            using (StreamReader sr = new StreamReader(blackListStream))
-            {
-                blacklist = sr.ReadToEnd().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            }
+            var blacklist = _db.UsedCoubs.ToList();
 
             foreach (var coub in newList)
             {
-                if (_coubs.All(i => i.Permalink != coub.Permalink) && blacklist.All(i => i != coub.Permalink))
+                if (_coubs.All(i => i.Permalink != coub.Permalink) && blacklist.All(i => i.Permalink != coub.Permalink))
                     _coubs.Add(coub);
                 else
                 {
@@ -83,16 +148,34 @@ namespace CoubCompilator
             Console.WriteLine("Loading videos and audios Uris for each coub");
             foreach (var coub in _coubs)
             {
-                _coubUris.Add(new CoubInfo(coub.FileVersions.Html5.Video.Higher.Url, coub.FileVersions.Html5.Audio?.High.Url, coub.Permalink, coub.Title, coub.Duration, Path.Combine(_compilatorPathFolder, coub.Permalink)));
+
+                _db.LoadedCoubs.Add(new LoadedCoubs()
+                {
+                    ID = _db.LoadedCoubs.Count(),
+                    CreatedAt = coub.CreatedAt.DateTime,
+                    DateLoaded = DateTime.Now,
+                    DislikesCount = (int?)coub.DislikesCount,
+                    DurationVideo = coub.Duration,
+                    LikesCount = (int?)coub.LikesCount,
+                    DurationSound = null,
+                    Path = string.Empty,
+                    PathBlured = string.Empty,
+                    PathCoub = string.Empty,
+                    ViewsCount = (int?)coub.ViewsCount,
+                    RemixesCount = (int?)coub.RemixesCount,
+                    RecoubsCount = (int?)coub.RecoubsCount,
+                    UrlVideo = string.IsNullOrEmpty(coub.FileVersions.Html5.Video.Higher)
+                        ? coub.FileVersions.Html5.Video.Higher
+                        : string.IsNullOrEmpty(coub.FileVersions.Html5.Video.High)
+                            ? coub.FileVersions.Html5.Video.High
+                            : coub.FileVersions.Html5.Video.Med,
+                    UrlAudio = string.IsNullOrEmpty(coub.FileVersions.Html5.Audio.High)
+                        ? coub.FileVersions.Html5.Audio.High
+                        : coub.FileVersions.Html5.Audio.Med
+                });
             }
 
-            using (FileStream fs = File.Create(_urisTxt))
-            {
-            }
-            using (StreamWriter sw = new StreamWriter(_urisTxt))
-            {
-                sw.Write(JsonConvert.SerializeObject(_coubUris));
-            }
+            _db.SaveChanges();
 
             Console.WriteLine($"Loading info complete.{Environment.NewLine}");
         }
@@ -123,34 +206,6 @@ namespace CoubCompilator
             Console.WriteLine("Downloading coubs to folder complete.");
         }
 
-        public void Work()
-        {
-            Console.WriteLine($"{Environment.NewLine}Starting work.");
-            int i = 0;
-            do
-            {
-                _loadCoubs(i);
-                _filterCoubs();
-                Console.WriteLine($"Coubs in store: {_coubs.Count}{Environment.NewLine}");
-                i++;
-            } while (_coubs.Count < _numberOfCoubsToCompile);
-
-            _loadVideosInfo();
-            _downloadCoubs();
-
-            _compileVideos();
-        }
-
-        public void CompileAll()
-        {
-            _fillVideosTxt();
-            _executeMainCompileCommand();
-        }
-
-        public void CompileMain()
-        {
-            _finalCompile();
-        }
 
         private void _compileVideos()
         {
@@ -171,20 +226,17 @@ namespace CoubCompilator
             //File.WriteAllText(videosTxt, "");
             using (StreamWriter streamWriter = new StreamWriter(fileStream))
             {
-                FileStream blackListStream = File.OpenWrite(_blackListPath);
+                //FileStream blackListStream = File.OpenWrite(_blackListPath);
 
-                using (StreamWriter blacklist = new StreamWriter(blackListStream))
+                //streamWriter.WriteLine($"file 'Intro.mp4'");
+                foreach (var coub in _coubUris)
                 {
-                    //streamWriter.WriteLine($"file 'Intro.mp4'");
-                    foreach (var coub in _coubUris)
-                    {
-                        if (!File.Exists(Path.Combine(_compilatorPathFolder, coub.Permalink, "Coub.mp4")))
-                            continue;
+                    if (!File.Exists(Path.Combine(_compilatorPathFolder, coub.Permalink, "Coub.mp4")))
+                        continue;
 
-                        streamWriter.WriteLine($"file '{coub.Permalink}/Coub.mp4'");
-                        blacklist.WriteLine(coub.Permalink);
-                        //streamWriter.WriteLine("file 'Separator.mp4'");
-                    }
+                    streamWriter.WriteLine($"file '{coub.Permalink}/Coub.mp4'");
+                    AddToBlackList(coub.Permalink);
+                    //streamWriter.WriteLine("file 'Separator.mp4'");
                 }
             }
             _executeMainCompileCommand();

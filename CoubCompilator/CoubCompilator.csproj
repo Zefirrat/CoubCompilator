@@ -35,6 +35,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,17 +50,66 @@
     <Compile Include="CoubClasses\CoubAPI.cs" />
     <Compile Include="CoubClasses\CoubResult.cs" />
     <Compile Include="CoubClasses\CoubInfo.cs" />
+    <Compile Include="CoubCompilatorModel.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CoubCompilatorModel.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CoubCompilatorModel.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CoubCompilatorModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CoubCompilatorModel.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CoubCompilatorModel.edmx</DependentUpon>
+    </Compile>
     <Compile Include="Http\Postman.cs" />
+    <Compile Include="LoadedCoubs.cs">
+      <DependentUpon>CoubCompilatorModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UploadedCompilations.cs">
+      <DependentUpon>CoubCompilatorModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UsedCoubs.cs">
+      <DependentUpon>CoubCompilatorModel.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <EntityDeploy Include="CoubCompilatorModel.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>CoubCompilatorModel.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="CoubCompilatorModel.edmx.diagram">
+      <DependentUpon>CoubCompilatorModel.edmx</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="EntityFramework">
+      <Version>6.2.0</Version>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.2</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CoubCompilatorModel.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>CoubCompilatorModel.edmx</DependentUpon>
+      <LastGenOutput>CoubCompilatorModel.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="CoubCompilatorModel.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>CoubCompilatorModel.edmx</DependentUpon>
+      <LastGenOutput>CoubCompilatorModel.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

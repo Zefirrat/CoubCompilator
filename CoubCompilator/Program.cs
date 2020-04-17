@@ -30,6 +30,9 @@ namespace CoubCompilator
                 case "CompileMain()":
                     compilatorsBody.CompileMain();
                     break;
+                case "Test()":
+                    compilatorsBody.AddToBlackList("Foo");
+                    break;
             }
             Console.ReadLine();
             goto enterCommand;
